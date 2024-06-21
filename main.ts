@@ -3,18 +3,13 @@ namespace SpriteKind {
     export const firething = SpriteKind.create()
     export const powerup = SpriteKind.create()
 }
-controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (info.score() >= 1) {
-        if (direction == 0) {
-            tiles.setTileAt(mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Left), assets.tile`myTile3`)
-            tiles.setWallAt(mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Left), true)
-            info.changeScoreBy(-1)
-        } else if (direction == 1) {
-            tiles.setTileAt(mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Right), assets.tile`myTile3`)
-            tiles.setWallAt(mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Right), true)
-            info.changeScoreBy(-1)
-        }
-    }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.powerup, function (sprite, otherSprite) {
+    info.startCountdown(50)
+    sprites.destroy(otherSprite, effects.spray, 500)
+    mySprite.changeScale(1, ScaleAnchor.Middle)
+})
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile11`, function (sprite, location) {
+    tiles.placeOnRandomTile(sprite, assets.tile`myTile13`)
 })
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (direction == 0) {
@@ -65,34 +60,34 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 info.onCountdownEnd(function () {
-    Jump = -500
+    mySprite.changeScale(-2, ScaleAnchor.Bottom)
 })
-controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
-    myDart = darts.create(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . 1 1 . . . . . 
-        . . . . . . . . 1 1 1 . . . . . 
-        . . . . . . . e e 1 . . . . . . 
-        . . . . . . e e e . . . . . . . 
-        . . . . . e e e . . . . . . . . 
-        . . . . e e e . . . . . . . . . 
-        . . . e e e . . . . . . . . . . 
-        1 . e e e . . . . . . . . . . . 
-        . 1 e e . . . . . . . . . . . . 
-        1 2 1 . . . . . . . . . . . . . 
-        2 1 . 1 . . . . . . . . . . . . 
-        `, SpriteKind.Projectile, mySprite.x, mySprite.y)
-    myDart.setTrace()
-    myDart.controlWithArrowKeys()
+sprites.onOverlap(SpriteKind.Player, SpriteKind.waterthing, function (sprite, otherSprite) {
+    otherSprite.startEffect(effects.fountain)
+    otherSprite.startEffect(effects.fountain)
+    if (controller.up.isPressed()) {
+        mySprite.setVelocity(0, -5000)
+    }
 })
-controller.B.onEvent(ControllerButtonEvent.Repeated, function () {
-    myDart.angle += 1
-    myDart.pow += 1
-    myDart.traceColor += 1
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    projectile = sprites.createProjectileFromSprite(img`
+        . 2 1 2 2 2 2 2 2 2 2 2 2 2 2 . 
+        . 2 1 2 2 2 2 2 2 2 2 2 2 2 2 . 
+        . . 2 1 2 2 2 2 2 2 2 2 2 2 . . 
+        . . 2 2 2 2 2 2 1 1 2 2 2 2 . . 
+        . 2 1 2 2 2 2 1 1 1 1 2 2 2 2 . 
+        . 2 1 2 2 2 2 1 1 1 1 2 2 2 2 . 
+        . 2 1 2 2 2 2 2 2 1 1 1 2 2 2 . 
+        . 2 1 2 2 2 2 2 1 1 1 1 2 2 2 . 
+        . 2 2 1 2 2 2 2 1 1 1 1 2 2 2 . 
+        . 2 2 2 2 2 2 2 2 1 1 2 2 2 2 . 
+        . . 2 2 1 1 1 2 2 2 2 2 2 2 . . 
+        . . 2 2 2 1 1 1 2 2 2 2 2 2 . . 
+        . . . 2 2 2 2 1 2 2 2 2 2 . . . 
+        . . . 2 2 2 1 1 2 2 2 2 2 . . . 
+        . . . . 2 2 2 2 2 2 2 2 . . . . 
+        . . . . . . 2 2 2 2 . . . . . . 
+        `, mySprite, 0, 1000)
 })
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     if (mySprite.isHittingTile(CollisionDirection.Bottom)) {
@@ -180,37 +175,70 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
         direction = 1
     }
 })
-sprites.onOverlap(SpriteKind.Player, SpriteKind.waterthing, function (sprite, otherSprite) {
-    otherSprite.startEffect(effects.fountain)
-    otherSprite.startEffect(effects.fountain)
-    if (controller.up.isPressed()) {
-        mySprite.setVelocity(0, -5000)
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (direction == 0) {
+        projectile = sprites.createProjectileFromSprite(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . 2 2 2 2 2 2 . . 2 2 
+            . . . . 2 2 2 2 1 1 1 1 2 2 1 1 
+            . . 2 2 2 2 2 1 2 2 2 2 2 1 2 2 
+            . 2 2 2 2 1 2 2 2 2 2 2 2 2 2 2 
+            . 2 2 2 1 1 2 2 2 2 2 2 2 2 2 2 
+            2 2 1 2 1 1 2 2 2 2 2 2 2 2 2 2 
+            2 2 1 1 1 2 2 2 2 2 1 1 2 2 2 2 
+            2 2 2 2 2 2 2 1 1 2 1 1 1 2 2 2 
+            2 2 2 2 2 2 1 1 1 1 1 1 1 2 2 2 
+            . 2 2 2 2 2 1 1 1 1 1 1 2 2 2 2 
+            . 2 2 2 2 2 2 1 1 1 2 2 2 2 2 2 
+            . . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
+            . . . . 2 2 2 2 2 2 2 2 2 2 2 2 
+            . . . . . . 2 2 2 2 2 2 . . 2 2 
+            . . . . . . . . . . . . . . . . 
+            `, mySprite, -500, 0)
+    } else if (direction == 1) {
+        projectile = sprites.createProjectileFromSprite(img`
+            . . . . . . . . . . . . . . . . 
+            2 2 . . 2 2 2 2 2 2 . . . . . . 
+            1 1 2 2 1 1 1 1 2 2 2 2 . . . . 
+            2 2 1 2 2 2 2 2 1 2 2 2 2 2 . . 
+            2 2 2 2 2 2 2 2 2 2 1 2 2 2 2 . 
+            2 2 2 2 2 2 2 2 2 2 1 1 2 2 2 . 
+            2 2 2 2 2 2 2 2 2 2 1 1 2 1 2 2 
+            2 2 2 2 1 1 2 2 2 2 2 1 1 1 2 2 
+            2 2 2 1 1 1 2 1 1 2 2 2 2 2 2 2 
+            2 2 2 1 1 1 1 1 1 1 2 2 2 2 2 2 
+            2 2 2 2 1 1 1 1 1 1 2 2 2 2 2 . 
+            2 2 2 2 2 2 1 1 1 2 2 2 2 2 2 . 
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 . . 
+            2 2 2 2 2 2 2 2 2 2 2 2 . . . . 
+            2 2 . . 2 2 2 2 2 2 . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, mySprite, 500, 0)
     }
 })
-controller.B.onEvent(ControllerButtonEvent.Released, function () {
-    myDart.throwDart()
-    myDart.setFlag(SpriteFlag.DestroyOnWall, true)
-})
-sprites.onOverlap(SpriteKind.Player, SpriteKind.powerup, function (sprite, otherSprite) {
-    Jump = -1000
-    info.startCountdown(50)
-    sprites.destroy(otherSprite, effects.spray, 500)
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.destroy(sprite, effects.fire, 500)
+    sprites.destroy(otherSprite, effects.fire, 500)
+    info.changeScoreBy(1)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
     info.changeScoreBy(1)
 })
+let mySprite6: Sprite = null
 let mySprite2: Sprite = null
 let location: tiles.Location = null
 let mySprite3: Sprite = null
-let myDart: Dart = null
+let projectile: Sprite = null
 let mySprite4: Sprite = null
 let direction = 0
 let mySprite: Sprite = null
 let Jump = 0
+info.setLife(6)
+scene.setBackgroundColor(6)
 Jump = -500
 mySprite = sprites.create(img`
-    . . . . . . 2 2 2 2 2 . . . . . 
+    . . . . . 2 2 2 2 2 2 . . . . . 
     . . . 2 2 2 2 2 2 2 2 2 . . . . 
     . . . . . 4 f 4 4 e e e . . . . 
     . . . 4 4 4 f 4 4 4 e 4 e . . . 
@@ -272,95 +300,8 @@ for (let value of tiles.getTilesByType(assets.tile`transparency16`)) {
     tiles.setWallAt(value, false)
     tiles.setTileAt(value, assets.tile`myTile1`)
 }
-game.onUpdateInterval(50000, function () {
-    for (let value of tiles.getTilesByType(assets.tile`myTile8`)) {
-        tiles.setTileAt(value, assets.tile`myTile4`)
-    }
-})
+let in_cappy = false
 forever(function () {
-    if (myDart) {
-        if (direction == 0) {
-            if (myDart.vy > 0) {
-                myDart.setImage(img`
-                    . . . . . . . . . . . . 1 . 1 2 
-                    . . . . . . . . . . . . . 1 2 1 
-                    . . . . . . . . . . . . e e 1 . 
-                    . . . . . . . . . . . e e e . 1 
-                    . . . . . . . . . . e e e . . . 
-                    . . . . . . . . . e e e . . . . 
-                    . . . . . . . . e e e . . . . . 
-                    . . . . . . . e e e . . . . . . 
-                    . . . . . . 1 e e . . . . . . . 
-                    . . . . . 1 1 1 . . . . . . . . 
-                    . . . . . 1 1 . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    `)
-            } else if (myDart.vy < 0) {
-                myDart.setImage(img`
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . 1 1 . . . . . . . . . 
-                    . . . . . 1 1 1 . . . . . . . . 
-                    . . . . . . 1 e e . . . . . . . 
-                    . . . . . . . e e e . . . . . . 
-                    . . . . . . . . e e e . . . . . 
-                    . . . . . . . . . e e e . . . . 
-                    . . . . . . . . . . e e e . . . 
-                    . . . . . . . . . . . e e e . 1 
-                    . . . . . . . . . . . . e e 1 . 
-                    . . . . . . . . . . . . . 1 2 1 
-                    . . . . . . . . . . . . 1 . 1 2 
-                    `)
-            }
-        } else if (direction == 1) {
-            if (myDart.vy > 0) {
-                myDart.setImage(img`
-                    2 1 . 1 . . . . . . . . . . . . 
-                    1 2 1 . . . . . . . . . . . . . 
-                    . 1 e e . . . . . . . . . . . . 
-                    1 . e e e . . . . . . . . . . . 
-                    . . . e e e . . . . . . . . . . 
-                    . . . . e e e . . . . . . . . . 
-                    . . . . . e e e . . . . . . . . 
-                    . . . . . . e e e . . . . . . . 
-                    . . . . . . . e e 1 . . . . . . 
-                    . . . . . . . . 1 1 1 . . . . . 
-                    . . . . . . . . . 1 1 . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    `)
-            } else if (myDart.vy < 0) {
-                myDart.setImage(img`
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . 1 1 . . . . . 
-                    . . . . . . . . 1 1 1 . . . . . 
-                    . . . . . . . e e 1 . . . . . . 
-                    . . . . . . e e e . . . . . . . 
-                    . . . . . e e e . . . . . . . . 
-                    . . . . e e e . . . . . . . . . 
-                    . . . e e e . . . . . . . . . . 
-                    1 . e e e . . . . . . . . . . . 
-                    . 1 e e . . . . . . . . . . . . 
-                    1 2 1 . . . . . . . . . . . . . 
-                    2 1 . 1 . . . . . . . . . . . . 
-                    `)
-            }
-        }
-    }
     if (mySprite.vy < 0) {
         if (mySprite.tileKindAt(TileDirection.Top, assets.tile`myTile4`)) {
             if (Math.percentChance(75)) {
@@ -505,6 +446,12 @@ forever(function () {
         }
     }
 })
+game.onUpdateInterval(50000, function () {
+    for (let value of tiles.getTilesByType(assets.tile`myTile8`)) {
+        tiles.setTileAt(value, assets.tile`myTile4`)
+    }
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+})
 game.onUpdateInterval(5000, function () {
     location = list[randint(0, list.length - 1)]
     mySprite2 = sprites.create(img`
@@ -578,4 +525,26 @@ game.onUpdateInterval(5000, function () {
     true
     )
     tiles.placeOnTile(mySprite2, location.getNeighboringLocation(CollisionDirection.Top))
+})
+game.onUpdateInterval(500, function () {
+    mySprite6 = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        f f . . f f f f f f . . . . . . 
+        1 1 f f 1 1 1 1 f f f f . . . . 
+        f f 1 f f f f f 1 f f f f f . . 
+        f f f f f f f f f f 1 f f f f . 
+        f f f f f f f f f f 1 1 f f f . 
+        f f f f f f f f f f 1 1 f 1 f f 
+        f f f f 1 1 f f f f f 1 1 1 f f 
+        f f f 1 1 1 f 1 1 f f f f f f f 
+        f f f 1 1 1 1 1 1 1 f f f f f f 
+        f f f f 1 1 1 1 1 1 f f f f f . 
+        f f f f f f 1 1 1 f f f f f f . 
+        f f f f f f f f f f f f f f . . 
+        f f f f f f f f f f f f . . . . 
+        f f . . f f f f f f . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Enemy)
+    tiles.placeOnRandomTile(mySprite6, assets.tile`myTile6`)
+    mySprite6.ax = 1000
 })
