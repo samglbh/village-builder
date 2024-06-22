@@ -1,10 +1,12 @@
 {
-    "name": "village builder",
+    "name": "mario",
     "description": "",
     "dependencies": {
         "device": "*",
         "arcade-tile-util": "github:microsoft/arcade-tile-util#v1.2.0",
-        "darts": "*"
+        "darts": "*",
+        "sprite-scaling": "*",
+        "pxt-status-bar": "github:jwunderl/pxt-status-bar#v0.4.2"
     },
     "files": [
         "main.blocks",
