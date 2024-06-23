@@ -5,11 +5,17 @@ namespace SpriteKind {
     export const fireup = SpriteKind.create()
     export const moon = SpriteKind.create()
     export const HeartUp = SpriteKind.create()
+    export const invisibleup = SpriteKind.create()
+    export const uninvisibleup = SpriteKind.create()
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.HeartUp, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite, effects.spray, 500)
+    info.changeLifeBy(1)
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.powerup, function (sprite, otherSprite) {
     info.startCountdown(40)
-    scaling.scaleByPixels(sprite, -5, ScaleDirection.Uniformly, ScaleAnchor.Middle, true)
-    sprites.destroy(otherSprite)
+    scaling.scaleByPixels(sprite, -10, ScaleDirection.Uniformly, ScaleAnchor.Middle, true)
+    sprites.destroy(otherSprite, effects.spray, 500)
     sprites.destroyAllSpritesOfKind(SpriteKind.powerup)
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -60,10 +66,6 @@ scene.onOverlapTile(SpriteKind.Enemy, assets.tile`myTile18`, function (sprite, l
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile14`, function (sprite, location) {
     tiles.placeOnRandomTile(sprite, assets.tile`myTile15`)
-})
-sprites.onOverlap(SpriteKind.Player, SpriteKind.HeartUp, function (sprite, otherSprite) {
-    sprites.destroy(otherSprite)
-    info.changeLifeBy(1)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile11`, function (sprite, location) {
     tiles.placeOnRandomTile(sprite, assets.tile`myTile13`)
@@ -117,12 +119,35 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 info.onCountdownEnd(function () {
-    scaling.scaleByPixels(mySprite, 5, ScaleDirection.Uniformly, ScaleAnchor.Middle, true)
+    scaling.scaleByPixels(mySprite, 10, ScaleDirection.Uniformly, ScaleAnchor.Middle, true)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.fireup, function (sprite, otherSprite) {
     mySprite.startEffect(effects.fire, 10000)
     mySprite.startEffect(effects.fire, 10000)
     sprites.destroy(otherSprite, effects.fire, 100)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.invisibleup, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite, effects.spray, 500)
+    projectile2 = sprites.createProjectileFromSide(img`
+        . . . . . . . . . . . . . . . . 
+        . . 2 1 1 1 1 1 2 . . . . . . . 
+        . 2 1 1 1 1 1 1 1 2 . . . . . . 
+        2 2 1 1 2 2 1 1 1 2 2 . . . . . 
+        2 1 1 2 2 2 2 1 1 1 2 . . . . . 
+        1 1 1 2 2 2 2 1 1 1 1 . . . . . 
+        1 1 1 1 1 2 1 1 1 . . . . . . . 
+        2 2 1 1 1 1 d e d . . . . . . . 
+        . 2 2 1 d d d e d . . . . . . . 
+        . . . . d d d d d . . . . . . . 
+        . . . 8 8 5 d 5 8 . . . . . . . 
+        . . d 8 8 5 d 5 8 d . . . . . . 
+        . d d 5 5 5 1 5 5 d d . . . . . 
+        . . . 1 1 1 1 1 1 . . . . . . . 
+        . e e e 1 1 1 e e e . . . . . . 
+        . e e e . . . e e e . . . . . . 
+        `, 0, 0)
+    projectile2.setFlag(SpriteFlag.GhostThroughWalls, true)
+    projectile2.follow(mySprite)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.waterthing, function (sprite, otherSprite) {
     otherSprite.startEffect(effects.fountain)
@@ -130,6 +155,35 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.waterthing, function (sprite, ot
     if (controller.up.isPressed()) {
         mySprite.setVelocity(0, -5000)
     }
+})
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    projectile3 = sprites.createProjectileFromSprite(img`
+        .4..22.22......
+        ...24424422....
+        ..2244444442...
+        .244444114442..
+        2444441111442..
+        24444111114442.
+        24441111114242.
+        24444111114242.
+        .244441111122.4
+        .24241111122...
+        242441111142...
+        .244411111442.4
+        .244411114242..
+        .244441114242..
+        .224241144242..
+        .2.244114422...
+        ....241442.....
+        .....2414......
+        .....2414......
+        .....241.......
+        .....244.......
+        ......41.......
+        ......4........
+        ......4........
+        `, mySprite, 0, -100)
+    projectile3.startEffect(effects.fire)
 })
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     if (mySprite.isHittingTile(CollisionDirection.Bottom)) {
@@ -228,7 +282,7 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.moon, function (sprite, otherSprite) {
-    sprites.destroy(otherSprite)
+    sprites.destroy(otherSprite, effects.spray, 500)
     statusbar.value += 1
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
@@ -242,32 +296,46 @@ sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Player, function (sprite, otherSp
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (direction == 0) {
         projectile = sprites.createProjectileFromSprite(img`
-            . 2 . 2 2 . . . 
-            . . 2 . 2 2 2 . 
-            2 . . . 2 4 2 2 
-            . . 2 2 2 4 4 2 
-            . 2 2 4 4 1 4 2 
-            . 2 4 4 1 4 2 2 
-            . 2 2 4 4 2 2 . 
-            . . 2 2 2 2 . . 
+            ........4..4............
+            .....222................
+            ...224442..2222.........
+            ..24442222244442........
+            .244444412442222........
+            .2441111111144442.......
+            2441111111111144444.....
+            2441111111111111411141..
+            .24411111111111114444444
+            244441114111144442222...
+            24444414444444242.......
+            .224444442444442........
+            ..2444444424442.........
+            4..2444422422222........
+            ....2222..2.............
             `, mySprite, -50, 0)
         projectile.startEffect(effects.fire)
     } else if (direction == 1) {
         projectile = sprites.createProjectileFromSprite(img`
-            . . . 2 2 . 2 . 
-            . 2 2 2 . 2 . . 
-            2 2 4 2 . . . 2 
-            2 4 4 2 2 2 . . 
-            2 4 1 4 4 2 2 . 
-            2 2 4 1 4 4 2 . 
-            . 2 2 4 4 2 2 . 
-            . . 2 2 2 2 . . 
+            ............4..4........
+            ................222.....
+            .........2222..244422...
+            ........24444222224442..
+            ........222244214444442.
+            .......2444411111111442.
+            .....4444411111111111442
+            ..1411141111111111111442
+            44444441111111111111442.
+            ...222244441111411144442
+            .......24244444441444442
+            ........244444244444422.
+            .........2444244444442..
+            ........2222242244442..4
+            .............2..2222....
             `, mySprite, 50, 0)
         projectile.startEffect(effects.fire)
     }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
-    sprites.destroy(otherSprite)
+    sprites.destroy(otherSprite, effects.spray, 500)
     info.changeScoreBy(1)
 })
 statusbars.onStatusReached(StatusBarKind.Health, statusbars.StatusComparison.EQ, statusbars.ComparisonType.Percentage, 100, function (status) {
@@ -277,163 +345,19 @@ let mySprite6: Sprite = null
 let mySprite2: Sprite = null
 let location: tiles.Location = null
 let mySprite3: Sprite = null
+let projectile3: Sprite = null
+let projectile2: Sprite = null
 let projectile: Sprite = null
 let mySprite4: Sprite = null
 let direction = 0
 let mySprite: Sprite = null
 let Jump = 0
 let statusbar: StatusBarSprite = null
-let img_list = [
-img`
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . 1 1 1 1 1 . . 1 1 1 . 
-    . . . . . 1 1 1 1 1 1 1 1 1 1 1 . 
-    . . . . . e e e 4 4 f 4 . 1 1 1 . 
-    . . . . e 4 e 4 4 4 f 4 4 4 1 1 . 
-    . . . . e 4 e e 4 4 4 f 4 4 4 1 . 
-    . . . . e e 4 4 4 4 f f f f 1 . . 
-    . . . . . . 4 4 4 4 4 4 4 1 1 . . 
-    1 1 1 1 1 1 1 2 1 1 1 2 1 1 . . . 
-    1 1 1 1 1 1 1 1 2 1 1 1 2 . . . . 
-    . . . . . 1 1 1 2 2 2 2 5 2 2 e e 
-    . . . . . . 2 2 2 5 2 2 2 2 2 e e 
-    . . . . e e 2 2 2 2 2 2 2 2 2 e e 
-    . . . e e e 2 2 2 2 2 2 . . . . . 
-    . . . e e . . . . . . . . . . . . 
-    `,
-img`
-    . . . . . 1 1 1 1 1 . . . . . . 
-    . . . . 1 1 1 1 1 1 1 1 1 . . . 
-    . . . . e e e 4 4 f 4 . . . . . 
-    . . . e 4 e 4 4 4 f 4 4 4 . . . 
-    . . . e 4 e e 4 4 4 f 4 4 4 . . 
-    . . . . e 4 4 4 4 f f f f . . . 
-    . . . . . 4 4 4 4 4 4 . . . . . 
-    . . . . 1 1 2 1 1 2 1 1 . . . . 
-    . . . 1 1 1 2 1 1 2 1 1 1 . . . 
-    . . 1 1 1 1 2 2 2 2 1 1 1 1 . . 
-    . . 1 1 1 2 5 2 2 5 2 1 1 1 . . 
-    . . 1 1 1 2 2 2 2 2 2 1 1 1 . . 
-    . . 1 1 2 2 2 2 2 2 2 2 1 1 . . 
-    . . . . 2 2 2 . . 2 2 2 . . . . 
-    . . . e e e . . . . e e e . . . 
-    . . e e e e . . . . e e e e . . 
-    `,
-img`
-    . . . . . 2 2 2 2 2 . . . . . . 
-    . . . . 2 2 2 2 2 2 2 2 2 . . . 
-    . . . . e e e 4 4 f 4 . . . . . 
-    . . . e 4 e 4 4 4 f 4 4 4 . . . 
-    . . . e 4 e e 4 4 4 f 4 4 4 . . 
-    . . . . e 4 4 4 4 f f f f . . . 
-    . . . . . 4 4 4 4 4 4 . . . . . 
-    . . . . 2 2 8 2 2 8 2 2 . . . . 
-    . . . 2 2 2 8 2 2 8 2 2 2 . . . 
-    . . 2 2 2 2 8 8 8 8 2 2 2 2 . . 
-    . . 1 1 2 8 5 8 8 5 8 2 1 1 . . 
-    . . 1 1 1 8 8 8 8 8 8 1 1 1 . . 
-    . . 1 1 8 8 8 8 8 8 8 8 1 1 . . 
-    . . . . 8 8 8 . . 8 8 8 . . . . 
-    . . . e e e . . . . e e e . . . 
-    . . e e e e . . . . e e e e . . 
-    `,
-img`
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . 2 2 2 2 2 . . 1 1 1 . 
-    . . . . . 2 2 2 2 2 2 2 2 2 1 1 . 
-    . . . . . e e e 4 4 f 4 . 2 2 2 . 
-    . . . . e 4 e 4 4 4 f 4 4 4 2 2 . 
-    . . . . e 4 e e 4 4 4 f 4 4 4 2 . 
-    . . . . e e 4 4 4 4 f f f f 2 . . 
-    . . . . . . 4 4 4 4 4 4 4 2 2 . . 
-    1 1 1 2 2 2 2 8 2 2 2 8 2 2 . . . 
-    1 1 1 2 2 2 2 2 8 2 2 2 8 . . . . 
-    . . . . . 2 2 2 8 8 8 8 5 8 8 e e 
-    . . . . . . 8 8 8 5 8 8 8 8 8 e e 
-    . . . . e e 8 8 8 8 8 8 8 8 8 e e 
-    . . . e e e 8 8 8 8 8 8 . . . . . 
-    . . . e e . . . . . . . . . . . . 
-    `,
-img`
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . . 
-    . 1 1 1 . . 1 1 1 1 1 . . . . . . 
-    . 1 1 1 1 1 1 1 1 1 1 1 . . . . . 
-    . 1 1 1 . 4 f 4 4 e e e . . . . . 
-    . 1 1 4 4 4 f 4 4 4 e 4 e . . . . 
-    . 1 4 4 4 f 4 4 4 e e 4 e . . . . 
-    . . 1 f f f f 4 4 4 4 e e . . . . 
-    . . 1 1 4 4 4 4 4 4 4 . . . . . . 
-    . . . 1 1 2 1 1 1 2 1 1 1 1 1 1 1 
-    . . . . 2 1 1 1 2 1 1 1 1 1 1 1 1 
-    e e 2 2 5 2 2 2 2 1 1 1 . . . . . 
-    e e 2 2 2 2 2 5 2 2 2 . . . . . . 
-    e e 2 2 2 2 2 2 2 2 2 e e . . . . 
-    . . . . . 2 2 2 2 2 2 e e e . . . 
-    . . . . . . . . . . . . e e . . . 
-    `,
-img`
-    . . . . . . 1 1 1 1 1 . . . . . 
-    . . . 1 1 1 1 1 1 1 1 1 . . . . 
-    . . . . . 4 f 4 4 e e e . . . . 
-    . . . 4 4 4 f 4 4 4 e 4 e . . . 
-    . . 4 4 4 f 4 4 4 e e 4 e . . . 
-    . . . f f f f 4 4 4 4 e . . . . 
-    . . . . . 4 4 4 4 4 4 . . . . . 
-    . . . . 1 1 2 1 1 2 1 1 . . . . 
-    . . . 1 1 1 2 1 1 2 1 1 1 . . . 
-    . . 1 1 1 1 2 2 2 2 1 1 1 1 . . 
-    . . 1 1 1 2 5 2 2 5 2 1 1 1 . . 
-    . . 1 1 1 2 2 2 2 2 2 1 1 1 . . 
-    . . 1 1 2 2 2 2 2 2 2 2 1 1 . . 
-    . . . . 2 2 2 . . 2 2 2 . . . . 
-    . . . e e e . . . . e e e . . . 
-    . . e e e e . . . . e e e e . . 
-    `,
-img`
-    . . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . . 
-    . 1 1 1 . . 2 2 2 2 2 . . . . . . 
-    . 1 1 2 2 2 2 2 2 2 2 2 . . . . . 
-    . 2 2 2 . 4 f 4 4 e e e . . . . . 
-    . 2 2 4 4 4 f 4 4 4 e 4 e . . . . 
-    . 2 4 4 4 f 4 4 4 e e 4 e . . . . 
-    . . 2 f f f f 4 4 4 4 e e . . . . 
-    . . 2 2 4 4 4 4 4 4 4 . . . . . . 
-    . . . 2 2 8 2 2 2 8 2 2 2 2 1 1 1 
-    . . . . 8 2 2 2 8 2 2 2 2 2 1 1 1 
-    e e 8 8 5 8 8 8 8 2 2 2 . . . . . 
-    e e 8 8 8 8 8 5 8 8 8 . . . . . . 
-    e e 8 8 8 8 8 8 8 8 8 e e . . . . 
-    . . . . . 8 8 8 8 8 8 e e e . . . 
-    . . . . . . . . . . . . e e . . . 
-    `,
-img`
-    . . . . . . 2 2 2 2 2 . . . . . 
-    . . . 2 2 2 2 2 2 2 2 2 . . . . 
-    . . . . . 4 f 4 4 e e e . . . . 
-    . . . 4 4 4 f 4 4 4 e 4 e . . . 
-    . . 4 4 4 f 4 4 4 e e 4 e . . . 
-    . . . f f f f 4 4 4 4 e . . . . 
-    . . . . . 4 4 4 4 4 4 . . . . . 
-    . . . . 2 2 8 2 2 8 2 2 . . . . 
-    . . . 2 2 2 8 2 2 8 2 2 2 . . . 
-    . . 2 2 2 2 8 8 8 8 2 2 2 2 . . 
-    . . 1 1 2 8 5 8 8 5 8 2 1 1 . . 
-    . . 1 1 1 8 8 8 8 8 8 1 1 1 . . 
-    . . 1 1 8 8 8 8 8 8 8 8 1 1 . . 
-    . . . . 8 8 8 . . 8 8 8 . . . . 
-    . . . e e e . . . . e e e . . . 
-    . . e e e e . . . . e e e e . . 
-    `
-]
 statusbar = statusbars.create(20, 4, StatusBarKind.Health)
 statusbar.value = 0
 statusbar.max = 20
 statusbar.positionDirection(CollisionDirection.Top)
-info.setLife(6)
+info.setLife(11)
 scene.setBackgroundColor(6)
 Jump = -450
 mySprite = sprites.create(img`
@@ -584,8 +508,6 @@ forever(function () {
                 100,
                 false
                 )
-                tiles.placeOnTile(mySprite3, mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Top).getNeighboringLocation(CollisionDirection.Top))
-                mySprite3.ay = 20
             } else {
                 if (Math.percentChance(50)) {
                     if (Math.percentChance(50)) {
@@ -611,38 +533,64 @@ forever(function () {
                         mySprite3.ay = 20
                     } else {
                         mySprite3 = sprites.create(img`
-                            . . f f f f . . . . . f f f f . . 
-                            . f 2 2 2 2 f . . . f 2 2 2 2 f . 
-                            f 2 2 1 1 2 2 f . f 2 2 2 2 2 2 f 
-                            f 2 1 1 2 2 2 2 f 2 2 2 2 2 2 2 f 
-                            f 2 2 2 2 2 f 2 2 2 f 2 2 2 2 2 f 
-                            . f 2 2 2 2 f 2 2 2 f 2 2 2 2 f . 
-                            . f 2 2 2 2 f 2 2 2 f 2 2 2 2 f . 
-                            . . f 2 2 2 f 2 2 2 f 2 2 2 f . . 
-                            . . . f 2 2 2 2 2 2 2 2 2 f . . . 
-                            . . . . f 2 2 2 2 2 2 2 f . . . . 
-                            . . . . . f 2 2 2 2 2 f . . . . . 
-                            . . . . . . f 2 2 2 f . . . . . . 
-                            . . . . . . . f 2 f . . . . . . . 
-                            . . . . . . . . f . . . . . . . . 
+                            . . f f f f f . . 
+                            . f 1 7 7 7 7 f . 
+                            f 1 1 7 7 7 1 7 f 
+                            f 7 7 7 7 1 1 1 f 
+                            f 1 7 7 7 7 1 7 f 
+                            . f f f f f f f . 
+                            . f d f d f d f . 
+                            . f d d d d d f . 
+                            . . f f f f f . . 
                             `, SpriteKind.HeartUp)
                         tiles.placeOnTile(mySprite3, mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Top).getNeighboringLocation(CollisionDirection.Top))
                         mySprite3.ay = 20
                     }
                 } else {
-                    mySprite3 = sprites.create(img`
-                        . . f f f f f . . 
-                        . f 1 8 8 8 8 f . 
-                        f 1 1 8 8 8 1 8 f 
-                        f 8 8 8 8 1 1 1 f 
-                        f 1 8 8 8 8 1 8 f 
-                        . f f f f f f f . 
-                        . f d f d f d f . 
-                        . f d d d d d f . 
-                        . . f f f f f . . 
-                        `, SpriteKind.powerup)
-                    tiles.placeOnTile(mySprite3, mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Top).getNeighboringLocation(CollisionDirection.Top))
-                    mySprite3.ay = 20
+                    if (Math.percentChance(50)) {
+                        mySprite3 = sprites.create(img`
+                            . . f f f f f . . 
+                            . f 1 8 8 8 8 f . 
+                            f 1 1 8 8 8 1 8 f 
+                            f 8 8 8 8 1 1 1 f 
+                            f 1 8 8 8 8 1 8 f 
+                            . f f f f f f f . 
+                            . f d f d f d f . 
+                            . f d d d d d f . 
+                            . . f f f f f . . 
+                            `, SpriteKind.powerup)
+                        tiles.placeOnTile(mySprite3, mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Top).getNeighboringLocation(CollisionDirection.Top))
+                        mySprite3.ay = 20
+                    } else {
+                        if (Math.percentChance(50)) {
+                            mySprite3 = sprites.create(img`
+                                . . f f f f f . . 
+                                . f 1 6 6 6 6 f . 
+                                f 1 1 6 6 6 1 6 f 
+                                f 6 6 6 6 1 1 1 f 
+                                f 1 6 6 6 6 1 6 f 
+                                . f f f f f f f . 
+                                . f d f d f d f . 
+                                . f d d d d d f . 
+                                . . f f f f f . . 
+                                `, SpriteKind.invisibleup)
+                            tiles.placeOnTile(mySprite3, mySprite.tilemapLocation().getNeighboringLocation(CollisionDirection.Top).getNeighboringLocation(CollisionDirection.Top))
+                            mySprite3.ay = 20
+                            mySprite3.ay = 20
+                        } else {
+                            mySprite3 = sprites.create(img`
+                                . . f f f f f . . 
+                                . f 2 2 2 2 2 f . 
+                                f 2 1 1 1 1 1 2 f 
+                                f 1 1 2 1 2 1 1 f 
+                                f 1 2 1 2 1 2 1 f 
+                                . f f f f f f f . 
+                                . f d f d f d f . 
+                                . f d d d d d f . 
+                                . . f f f f f . . 
+                                `, SpriteKind.uninvisibleup)
+                        }
+                    }
                 }
             }
             if (Math.percentChance(45)) {
